@@ -131,9 +131,9 @@ options:
     version_added: '1.9.2'
   ca_path:
     description:
-      - TBA
+      - PEM formatted CA certificate file to be used for validation of server SSL certificates.
     type: path
-    version_added: '2.11' (future)
+    version_added: '2.11'
   client_cert:
     description:
       - PEM formatted certificate chain file to be used for SSL client authentication.
@@ -644,8 +644,6 @@ def main():
         headers=dict(type='dict', default={}),
         unix_socket=dict(type='path'),
         remote_src=dict(type='bool', default=False),
-        # can be also put into 'uri'-specific spec
-        #ca_path=dict(type='path'),
     )
 
     module = AnsibleModule(
