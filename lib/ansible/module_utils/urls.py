@@ -1395,8 +1395,8 @@ class Request:
             context = ssl.create_default_context(cafile=ca_path)
             handlers.append(HTTPSClientAuthHandler(client_cert=client_cert,
                                                    client_key=client_key,
-                                                   unix_socket=unix_socket,
-                                                   context=context))
+                                                   context=context,
+                                                   unix_socket=unix_socket))
 
         if ssl_handler and HAS_SSLCONTEXT and validate_certs:
             tmp_ca_path, cadata, paths_checked = ssl_handler.get_ca_certs()
@@ -1693,7 +1693,7 @@ def url_argument_spec():
         client_cert=dict(type='path'),
         client_key=dict(type='path'),
         use_gssapi=dict(type='bool', default=False),
-        ca_path=dict(type='path')
+        ca_path=dict(type='path'),
     )
 
 
@@ -1754,6 +1754,8 @@ def fetch_url(module, url, data=None, headers=None, method=None,
 
     client_cert = module.params.get('client_cert')
     client_key = module.params.get('client_key')
+    # this would work even without passing 'ca_path' as parameter
+    #ca_path = module.params.get('ca_path')
     use_gssapi = module.params.get('use_gssapi', use_gssapi)
 
     if not isinstance(cookies, cookiejar.CookieJar):

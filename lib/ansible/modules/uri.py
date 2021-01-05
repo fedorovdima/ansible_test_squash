@@ -644,6 +644,8 @@ def main():
         headers=dict(type='dict', default={}),
         unix_socket=dict(type='path'),
         remote_src=dict(type='bool', default=False),
+        # can be also put into 'uri'-specific spec
+        #ca_path=dict(type='path'),
     )
 
     module = AnsibleModule(
