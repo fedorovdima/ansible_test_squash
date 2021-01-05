@@ -1310,6 +1310,7 @@ class Request:
             handlers.append(UnixHTTPHandler(unix_socket))
 
         ssl_handler = maybe_add_ssl_handler(url, validate_certs, ca_path=ca_path)
+        # HAS_SSLCONTEXT = True, so we don't go further
         if ssl_handler and not HAS_SSLCONTEXT:
             handlers.append(ssl_handler)
 
@@ -1391,14 +1392,17 @@ class Request:
                                                    context=context,
                                                    unix_socket=unix_socket))
         elif client_cert or unix_socket:
+            context = ssl.create_default_context(cafile=ca_path)
             handlers.append(HTTPSClientAuthHandler(client_cert=client_cert,
                                                    client_key=client_key,
-                                                   unix_socket=unix_socket))
+                                                   unix_socket=unix_socket,
+                                                   context=context))
 
         if ssl_handler and HAS_SSLCONTEXT and validate_certs:
             tmp_ca_path, cadata, paths_checked = ssl_handler.get_ca_certs()
             try:
                 context = ssl_handler.make_context(tmp_ca_path, cadata)
+                #raise Exception(paths_checked)
             except NotImplementedError:
                 pass
 
@@ -1445,7 +1449,9 @@ class Request:
             else:
                 request.add_header(header, headers[header])
 
+        #raise Exception(ca_path) ## before error 3
         return urllib_request.urlopen(request, None, timeout)
+        #return urllib_request.urlopen(request, None, timeout, cafile=ca_path)
 
     def get(self, url, **kwargs):
         r"""Sends a GET request. Returns :class:`HTTPResponse` object.
@@ -1534,6 +1540,7 @@ def open_url(url, data=None, headers=None, method=None, use_proxy=True,
     Does not require the module environment
     '''
     method = method or ('POST' if data else 'GET')
+    #raise Exception(ca_path) ## before error 2
     return Request().open(method, url, data=data, headers=headers, use_proxy=use_proxy,
                           force=force, last_mod_time=last_mod_time, timeout=timeout, validate_certs=validate_certs,
                           url_username=url_username, url_password=url_password, http_agent=http_agent,
@@ -1686,6 +1693,7 @@ def url_argument_spec():
         client_cert=dict(type='path'),
         client_key=dict(type='path'),
         use_gssapi=dict(type='bool', default=False),
+        ca_path=dict(type='path')
     )
 
 
@@ -1754,6 +1762,7 @@ def fetch_url(module, url, data=None, headers=None, method=None,
     r = None
     info = dict(url=url, status=-1)
     try:
+        #raise Exception(ca_path)  ## before error 1
         r = open_url(url, data=data, headers=headers, method=method,
                      use_proxy=use_proxy, force=force, last_mod_time=last_mod_time, timeout=timeout,
                      validate_certs=validate_certs, url_username=username,
@@ -1761,6 +1770,7 @@ def fetch_url(module, url, data=None, headers=None, method=None,
                      follow_redirects=follow_redirects, client_cert=client_cert,
                      client_key=client_key, cookies=cookies, use_gssapi=use_gssapi,
                      unix_socket=unix_socket, ca_path=ca_path)
+        #raise Exception(ca_path) ## after error
         # Lowercase keys, to conform to py2 behavior, so that py3 and py2 are predictable
         info.update(dict((k.lower(), v) for k, v in r.info().items()))
 
