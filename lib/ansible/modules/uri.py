@@ -129,6 +129,11 @@ options:
     type: bool
     default: yes
     version_added: '1.9.2'
+  ca_path:
+    description:
+      - PEM formatted CA certificate file to be used for validation of server SSL certificates.
+    type: path
+    version_added: '2.11'
   client_cert:
     description:
       - PEM formatted certificate chain file to be used for SSL client authentication.
@@ -578,7 +583,9 @@ def uri(module, url, dest, body, body_format, method, headers, socket_timeout):
             _, redir_info = fetch_url(module, url, data=body,
                                       headers=headers,
                                       method=method,
-                                      timeout=socket_timeout, unix_socket=module.params['unix_socket'])
+                                      timeout=socket_timeout, unix_socket=module.params['unix_socket'],
+                                      ca_path=module.params['ca_path']
+                                      )
             # if we are redirected, update the url with the location header,
             # and update dest with the new url filename
             if redir_info['status'] in (301, 302, 303, 307):
@@ -594,6 +601,7 @@ def uri(module, url, dest, body, body_format, method, headers, socket_timeout):
 
     resp, info = fetch_url(module, url, data=data, headers=headers,
                            method=method, timeout=socket_timeout, unix_socket=module.params['unix_socket'],
+                           ca_path=module.params['ca_path'],
                            **kwargs)
 
     try:
